@@ -1,0 +1,24 @@
+[tool.poetry]
+name = "tasbot-obs-autoswitcher"
+version = "0.1.0"
+description = "Automated video switcher for OBS based on external conditions."
+authors = ["Cody Wilson <cody@codywilson.co>"]
+license = "MIT"
+readme = "README.md"
+packages = [{include = "tasbot_obs_autoswitcher"}]
+
+[tool.poetry.dependencies]
+python = "^3.11"
+requests = "^2.31.0"
+asyncio = "^3.4.3"
+environs = "^10.0.0"
+simpleobsws = "^1.4.0"
+logging = "^0.4.9.6"
+aiohttp = "^3.9.1"
+
+[tool.poetry.group.dev.dependencies]
+black = "^23.12.1"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

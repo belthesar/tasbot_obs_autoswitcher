@@ -1,0 +1,28 @@
+{
+    "count": 1,
+    "next": null,
+    "previous": null,
+    "results": [
+        {
+            "type": "bid",
+            "id": 5141,
+            "name": "Save the Animals",
+            "event": 19,
+            "speedrun": 2119,
+            "state": "OPENED",
+            "parent": 5140,
+            "description": "They're essential to the story! Saving them is canon!",
+            "shortdescription": "Save",
+            "goal": null,
+            "total": "400233.46",
+            "count": 7242,
+            "repeat": null,
+            "chain": false,
+            "istarget": true,
+            "pinned": false,
+            "allowuseroptions": false,
+            "revealedtime": "2017-01-08T11:30:00-05:00",
+            "level": 1
+        }
+    ]
+}
