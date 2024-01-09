@@ -18,6 +18,7 @@ aiohttp = "^3.9.1"
 
 [tool.poetry.group.dev.dependencies]
 black = "^23.12.1"
+ipython = "^8.20.0"
 
 [build-system]
 requires = ["poetry-core"]

@@ -4,4 +4,3 @@ async def consumer(event, data):
         event.clear()
         if not data:
             break
-        
