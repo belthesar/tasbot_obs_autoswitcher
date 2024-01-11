@@ -1,3 +1,10 @@
 #!/usr/bin/env bash
 set -eof pipefail
-python3 -m http.server 8000 --bind
+NPX=$(which npx)
+# if npx is not installed, throw an error and exit
+if [ -z "$NPX" ]; then
+  echo "npx is not installed. Please install npx and try again."
+  exit 1
+fi
+# if npx is installed, start the mock tracker
+npx http-server 

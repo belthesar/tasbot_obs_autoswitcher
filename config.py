@@ -1,7 +1,6 @@
 import argparse
 import datetime
-from environs import Env
-
+from environs import Env 
 
 CONFIG = {
     "main": {
@@ -20,12 +19,12 @@ CONFIG = {
         ],
         "scene_switching_interval_seconds": 1,  # TODO: Remove this
     },
-    # TODO: Remove this
     "events": {
         "agdq2024": {
             "bid_client": "gdq_donation_tracker",
             "bid_check_ttl": datetime.timedelta(hours=0, minutes=1, seconds=0),
             "prod": {
+                "api_base_url": "https://gamesdonequick.com/tracker/api/v2/bids/?id=",
                 "bids_to_track": [
                     {
                         "bid_id": 5142,
@@ -43,10 +42,9 @@ CONFIG = {
                         "source": "Tie",
                     },
                 ],
-                "api_base_url": "https://gamesdonequick.com/tracker/api/v2/bids/?id=",
-                "poll_interval_seconds": 1,
             },
             "dev": {
+                "api_base_url": "http://localhost:8000/tracker/api/v2/bids/?id=",  # For testing
                 "bids_to_track": [
                     {
                         "bid_id": 1,
@@ -64,10 +62,9 @@ CONFIG = {
                         "source": "Tie",
                     },
                 ],
-                "api_base_url": "http://localhost:8000/tracker/api/v2/bids/?id=",  # For testing
-                "poll_interval_seconds": 1,
             },
             "mock": {
+                "api_base_url": "http://localhost:8080/",  
                 "bids_to_track": [
                     {
                         "bid_id": "save",
@@ -85,10 +82,7 @@ CONFIG = {
                         "source": "Tie",
                     },
                 ],
-                "api_base_url": "http://localhost:8080/",  # see README.md
-                "poll_interval_seconds": 1,
             },
-            "bid_ttl_delta": datetime.timedelta(hours=0, minutes=1, seconds=0),
             "poll_interval_seconds": 1,
         },
     },
