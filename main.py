@@ -143,15 +143,15 @@ async def tasbot_obs_autoswitcher_callback_v2(timer_name, context, timer):
                         logger.error(f'[HTTP] We encountered an error while trying to connect to the API: {e}')
                         pass
         for key, value in api_bid_data.items():
-            logger.info(f"[BID DATA] {key}: {value}")
+            logger.debug(f"[BID DATA] {key}: {value}")
         if api_bid_data["Kill"] > api_bid_data["Save"]:
-            logger.info("[BID DATA] Kill > Save")
+            logger.debug("[BID DATA] Kill > Save")
             await switch_active_media("Kill")
         elif api_bid_data["Kill"] < api_bid_data["Save"]:
-            logger.info("[BID DATA] Save > Kill")
+            logger.debug("[BID DATA] Save > Kill")
             await switch_active_media("Save")
         else:
-            logger.info("[BID DATA] Kill == Save")
+            logger.debug("[BID DATA] Kill == Save")
             await switch_active_media("Tie")
     return
 
