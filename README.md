@@ -8,12 +8,16 @@
 > Install poetry via pip, pipx, or your package manager. Poetry should be available in your PATH for the user running the script.
 * OBS Studio with the obs-websocket plugin v5.0.0 or higher (tested against v5.0.1)
 
-After cloning the repo, run `poetry install --no-dev` to install the dependencies into a virtual environment. 
-> I personally recommend setting the config option `virtualenvs.in-project` to true so that the virtual environment is created in the project directory. This makes it easier to find and delete the virtual environment if needed. You can set this option by running `poetry config virtualenvs.in-project true` in the project directory, optionally with the `--global` flag to set it globally.
-
 Ensure your poetry managed virtual environment is using python 3.11 by using the `poetry env use 3.11` command.
+
+After cloning the repo, run `poetry install --no-dev` to install the dependencies into a virtual environment. 
+> I personally recommend setting the config option `virtualenvs.in-project` to true so that the virtual environment is created in the project directory. This makes it easier to find and delete the virtual environment if needed. 
+You can set this option by running `poetry config virtualenvs.in-project true` in the project directory, optionally with the `--global` flag to set it globally.
+If you do not set this option, the virtual environment will be created in the poetry directory for your user, which is usually located in your home directory. See the [poetry documentation](https://python-poetry.org/docs/configuration/#virtualenvsin-project) for more information.
 ## Usage
 ### Running the script
+Ensure that you've configured OBS, the obs-websocket plugin, and the script configuration before running the script. Script configuration is described in the [Configuration](#configuration) section.
+
 To run the script, run `poetry run python main.py` in the project directory. This will start the script in the foreground.
 ### Configuration
 config.py contains the configuration for the script. Currently, then configuration is a large dictionary, breaking up the configuration into the following sections: 
