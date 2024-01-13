@@ -6,6 +6,7 @@ CONFIG = {
     "main": {
         "event": "agdq2024",
         "env": "mock",
+        "ttl_persist_path": "./ttl_persist.json",
     },
     "obs": {
         "host": "127.0.0.1",

@@ -8,12 +8,16 @@ Cody Wilson <cody@codywilson.co>
 import aiohttp
 import asyncio
 import datetime
+import json
 import logging
+import os
 import simpleobsws
 
-# from contextvars import ContextVar
-from config import CONFIG
+from enum import Enum
+from pathlib import Path
+from websockets import exceptions as websocket_exceptions
 
+from config import CONFIG
 from timer import Timer
 
 logging.basicConfig(
@@ -27,23 +31,54 @@ logging.basicConfig(
 OBS_WEBSOCKET_PARAMETERS = simpleobsws.IdentificationParameters()
 OBS_WEBSOCKET_PARAMETERS.eventSubscriptions = (1 << 0) | (1 << 2)
 
-### Context Variables
+### Global Variables
 run_started: bool = False
 run_started_at: datetime.datetime = None
 run_ttl_expired: bool = False
 api_bid_data: dict = {"Save": 0.0, "Kill": 0.0}
 last_api_bid_data: dict = {"Save": 0.0, "Kill": 0.0}
 
+### OBS Websocket
 ws = simpleobsws.WebSocketClient(
     url=f"ws://{CONFIG['obs']['host']}:{CONFIG['obs']['port']}",
     password=CONFIG["obs"]["password"],
     identification_parameters=OBS_WEBSOCKET_PARAMETERS,
 )
 
+
+### Persistence
+class PersistenceAction(Enum):
+    READ = 1
+    WRITE = 2
+    DELETE = 3
+
 async def on_switchedscenes(eventData):
     scene_name = eventData["sceneName"]
     if scene_name == "Metalive":  # TODO: Make this configurable
         await engage_auto_switcher()
+
+async def load_persistence_file(persistence_file_path: Path):
+    with open(persistence_file_path, "r") as f:
+        data = json.load(f)
+        run_started = data["run_started"]
+        run_started_at = datetime.datetime.strptime(
+            data["run_started_at"], "%Y-%m-%d %H:%M:%S"
+        )
+        return run_started, run_started_at
+    
+async def write_persistence_file(persistence_file_path: Path):
+    with open(persistence_file_path, "rw+") as f:
+        global run_started
+        global run_started_at
+        data = {
+            "run_started": run_started,
+            "run_started_at": run_started_at.strftime("%Y-%m-%d %H:%M:%S"),
+        }
+        if json.load(f.read()) != data:
+            json.dump(data, f)
+            return True
+        else:
+            return False
 
 async def engage_auto_switcher():
     global run_started
@@ -53,7 +88,10 @@ async def engage_auto_switcher():
     logging.info("[SWITCHER] Engaging auto switcher")
     run_started = True
     run_started_at = datetime.datetime.now()
-    logging.info(f"[SWITCHER] Run started at: {run_started_at.strftime('%Y-%m-%d %H:%M:%S')}")
+    logging.info(
+        f"[SWITCHER] Run started at: {run_started_at.strftime('%Y-%m-%d %H:%M:%S')}"
+    )
+
 
 async def switch_active_media(to_the_top: str, logger=logging.getLogger()):
     get_scene_item_list_request = simpleobsws.Request(
@@ -71,7 +109,7 @@ async def switch_active_media(to_the_top: str, logger=logging.getLogger()):
         if scene_item["sourceName"] == to_the_top:
             id_scene_item_to_move = scene_item["sceneItemId"]
             logging.debug(f"Found {to_the_top} at index {scene_item['sceneItemIndex']}")
-            if scene_item['sceneItemIndex'] == top_scene_item_index:
+            if scene_item["sceneItemIndex"] == top_scene_item_index:
                 logging.debug(f"{to_the_top} is already at the top of the scene")
                 return
 
@@ -109,7 +147,9 @@ async def tasbot_obs_autoswitcher_callback_v2(timer_name, context, timer):
     if run_started and not run_ttl_expired:
         logger.info("--------------------")
         if datetime.datetime.now() > run_started_at + context["bid_check_ttl"]:
-            logger.info("[SWITCHER] Run has exceeded the TTL, disabling the auto switcher!")
+            logger.info(
+                "[SWITCHER] Run has exceeded the TTL, disabling the auto switcher!"
+            )
             run_ttl_expired = True
             return
         async with aiohttp.ClientSession() as session:
@@ -117,10 +157,18 @@ async def tasbot_obs_autoswitcher_callback_v2(timer_name, context, timer):
                 if bid_type["bid_id"] is not None:
                     logger.debug(f"Looking up bid_id: {bid_type['bid_id']}")
                     try:
-                        async with session.get(base_url + str(bid_type["bid_id"])) as resp:
+                        async with session.get(
+                            base_url + str(bid_type["bid_id"])
+                        ) as resp:
                             if resp.status == 200:
                                 logger.debug("Found bid_id, parsing response")
-                                data = await resp.json(content_type='application/octet-stream') if resp.content_type == 'application/octet-stream' else await resp.json()
+                                data = (
+                                    await resp.json(
+                                        content_type="application/octet-stream"
+                                    )
+                                    if resp.content_type == "application/octet-stream"
+                                    else await resp.json()
+                                )
                                 if (
                                     data["count"] == 1
                                 ):  # we're looking up a bid by it's absolute ID, so we should only ever get one result
@@ -140,7 +188,9 @@ async def tasbot_obs_autoswitcher_callback_v2(timer_name, context, timer):
                                     )
                                     return
                     except aiohttp.ClientConnectorError as e:
-                        logger.error(f'[HTTP] We encountered an error while trying to connect to the API: {e}')
+                        logger.error(
+                            f"[HTTP] We encountered an error while trying to connect to the API: {e}"
+                        )
                         pass
         for key, value in api_bid_data.items():
             logger.debug(f"[BID DATA] {key}: {value}")
@@ -155,9 +205,37 @@ async def tasbot_obs_autoswitcher_callback_v2(timer_name, context, timer):
             await switch_active_media("Tie")
     return
 
+
 async def init():
-    await ws.connect()
-    await ws.wait_until_identified()
+    global run_started
+    global run_started_at
+    try:
+        await ws.connect()
+    except websocket_exceptions.InvalidStatusCode as e:
+        logging.error(
+            f"Could not connect to OBS Websocket, please check your configuration: {e}"
+        )
+        exit(1)
+    except ConnectionRefusedError as e:
+        logging.error(
+            f"Could not connect to OBS Websocket. Is OBS running and, is the websocket plugin activated? If so, please check your configuration: {e}"
+        )
+        exit(1)
+    logging.info("Connected to OBS Websocket, identifying...")
+    await ws.wait_until_identified(timeout=10)
+    try:
+        assert ws.identified
+    except AssertionError:
+        logging.error(
+            "We were unable to identify with the OBS Websocket, please check your configuration to make sure your password matches the one the OBS Websocket plugin configuration."
+        )
+        exit(1)
+    logging.info("Identified with OBS Websocket, checking for an active run...")
+    # if (os.path.isfile(CONFIG["main"]["ttl_persist_path"])):
+    #     logging.info("Found TTL persistence file, loading...")
+    #     run_started, run started_at = await load_persistence_file(CONFIG["main"]["ttl_persist_path"])
+    logging.info("TASBot OBS Autoswitcher initialized successfully!")
+
 
 def main():
     logger = logging.getLogger()
@@ -169,7 +247,7 @@ def main():
         loop.run_until_complete(init())
         ws.register_event_callback(on_switchedscenes, "CurrentProgramSceneChanged")
         timers: list = []
-        polling_interval: int = CONFIG['events'][event]["poll_interval_seconds"]
+        polling_interval: int = CONFIG["events"][event]["poll_interval_seconds"]
         obsws_update_interval: int = (
             CONFIG["obs"]["ws_update_interval_seconds"]
             if CONFIG["obs"]["ws_update_interval_seconds"]
@@ -200,7 +278,10 @@ def main():
         logger.warning("KeyboardInterrupt received, cleaning up...")
         loop.run_until_complete(ws.disconnect())
         for timer in timers:
-            timer["timer"].cancel()
+            try:
+                timer["timer"].cancel()
+            except Exception as e:
+                pass
         loop.close()
         logger.warning("Exited.")
 

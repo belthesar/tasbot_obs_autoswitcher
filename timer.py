@@ -25,4 +25,7 @@ class Timer:
 
     def cancel(self):
         self._ok = False
-        self._task.cancel()
+        try:
+            self._task.cancel()
+        except Exception as ex:
+            pass
