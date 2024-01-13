@@ -65,7 +65,7 @@ CONFIG = {
                 ],
             },
             "mock": {
-                "api_base_url": "http://localhost:8080/",  
+                "api_base_url": "http://localhost:5000/",  
                 "bids_to_track": [
                     {
                         "bid_id": "save",

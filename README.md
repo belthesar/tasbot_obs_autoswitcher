@@ -65,11 +65,29 @@ This is a list of dictionaries describing the bids to track. Each dictionary nee
 ## Development
 ### Requirements
 In addition to the requirements for running the script, there are additional development requrements. Youc an install these by running `poetry install --group dev` in the project directory.
-### Mock Tracker
-The mock tracker is a collection of json documents that mimic the output of GDQ's donation tracker. This is useful for testing the script without having to connect to a live or development instance of the tracker. 
+## Mock Tracker
+The mock tracker is a Flask app that both serves a mock API for the script to use, and a web interface for testing the script. The mock tracker is located in the `mock_tracker` directory. It can be used both for development as well as a break-glass option in case the real tracker or internet connection is unavailable.
+### Running the mock tracker
+To run the mock tracker, cd into the `mock-tracker` directory and run `start_mock_tracker.sh`. This will start a mock tracker server on port 5000. 
+### Overview
+The mock tracker first loads save and kill persistence files from the `db` directory. The tracker does not do any schema validation, that the files are valid JSON, and that they line up with the schema for the tracker you are using. Right now, like the autoswitcher, the mock tracker is only designed to work with the GDQ donation tracker, and specifically for the workflow for TASBot's exhibition at AGDQ 2024. 
+
+The mock tracker exposes 3 routes: 
+ * `/` [**GET**] - The web interface for the mock tracker. This is a simple HTML page that displays the current state of the tracker, and allows you to modify the state of the tracker with big easy to click buttons.
+ * `/save` [**GET**/**POST**] - This route exposes the API response for the "save" bid. 
+    * **GET** - Returns the current state of the save bid as a JSON object.
+        * URL parameters:
+            * `status` - Returns the status of the "save" bid as an emoji. This is used by the web interface to display the current status of the save bid.
+    * **POST** - This route updates both the save and kill endpoints so that save is ahead. This is done simply by setting the key at `.results[0].total` to 1 for the save bid, and 0 for the kill bid. This route does not accept any parameters.
+ * `/kill` [**GET**/**POST**] - This route exposes the API response for the "kill" bid.
+    * **GET** - Returns the current state of the kill bid as a JSON object.
+        * URL parameters:
+            * `status` - Returns the status of the "kill" bid as an emoji. This is used by the web interface to display the current status of the kill bid.
+    * **POST** - This route updates both the save and kill endpoints so that kill is ahead. This is done simply by setting the key at `.results[0].total` to 1 for the kill bid, and 0 for the save bid. This route does not accept any parameters.
+
 ### Requirements
-* A node.js runtime (tested against v16.16.0)
-* npx (`npm install -g npx`)
+* python3 3.11.x (tested against 3.11.7)
+* flask ^3.0.0
 
 ### Usage
 To start the mock tracker, cd int the `mock-tracker` directory and run `start_mock_tracker.sh`.
