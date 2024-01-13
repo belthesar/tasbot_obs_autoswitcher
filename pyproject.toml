@@ -15,6 +15,7 @@ environs = "^10.0.0"
 simpleobsws = "^1.4.0"
 logging = "^0.4.9.6"
 aiohttp = "^3.9.1"
+Flask = "^3.0.0"
 
 [tool.poetry.group.dev.dependencies]
 black = "^23.12.1"

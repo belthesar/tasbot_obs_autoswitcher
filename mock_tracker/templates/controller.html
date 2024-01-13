@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="button-container">
+    <button class="button" hx-post="/kill" hx-trigger="click" hx-swap="none">Set Kill as Ahead</button>
+    <button class="button" hx-post="/save" hx-trigger="click" hx-swap="none">Set Save as Ahead</button>
+</div>
+<div class="status">
+    <h2>Status</h2>
+    <div class="status-container">
+        <div class="status-item">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Kill</th>
+                        <th>Save</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>
+                            <div id="kill-status" class="status-indicator" hx-get="/kill?status" hx-trigger="load, every 1s" hx-swap="innerHTML">?</div>
+                        </td>
+                        <td>
+                            <div id="save-status" class="status-indicator" hx-get="/save?status" hx-trigger="load, every 1s" hx-swap="innerHTML">?</div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+    </div>
+</div>
+{% endblock content %}

@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>{% block title %}{% endblock title %} - TASBot</title>
+        <link rel="stylesheet" href="{{ url_for('static', filename='css/tasbot_autoswitcher.css') }}" />
+        <script src="{{ url_for('static', filename='dist/htmx.js') }}"></script>
+    </head>
+    <body>
+        <div id="header">
+            <h1>TASBot OBS Autoswitcher</h1>
+        </div>
+        <div id="content">
+            {% block content %}{% endblock content %}
+        </div>
+    </body>
+</html>
+
+
