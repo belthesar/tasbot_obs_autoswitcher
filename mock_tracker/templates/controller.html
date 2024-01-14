@@ -1,14 +1,15 @@
 {% extends "base.html" %}
+{% block title %}Controller{% endblock title %}
 {% block content %}
-<div class="button-container nes-container with-title is-dark is-rounded">
+<div class="button-container nes-container with-title is-dark is-rounded" style="background-color: #212529;">
     <p class="title">Controller</p>
-    <button class="button" hx-post="/kill" hx-trigger="click" hx-swap="none">Set Kill as Ahead</button>
-    <button class="button" hx-post="/save" hx-trigger="click" hx-swap="none">Set Save as Ahead</button>
+    <button class="button nes-btn" hx-post="/kill" hx-trigger="click" hx-swap="none">Set Kill as Ahead</button>
+    <button class="button nes-btn" hx-post="/save" hx-trigger="click" hx-swap="none">Set Save as Ahead</button>
 </div>
-<div class="status">
-    <h2>Status</h2>
+<div class="status nes-container with-title is-dark is-rounded">
+    <p class="title">Status</p>
     <div class="status-container">
-        <div class="status-item">
+        <div class="status-item" >
             <table class="nes-table is-dark is-bordered is-centered" width="400">
                 <thead>
                     <tr>
@@ -19,10 +20,10 @@
                 <tbody>
                     <tr>
                         <td>
-                            <div id="kill-status" class="status-indicator" hx-get="/kill?status" hx-trigger="load, every 1s" hx-swap="innerHTML">?</div>
+                            <div id="kill-status" class="status-indicator" hx-get="/kill?status" hx-trigger="load, every 0.2s" hx-swap="innerHTML">?</div>
                         </td>
                         <td>
-                            <div id="save-status" class="status-indicator" hx-get="/save?status" hx-trigger="load, every 1s" hx-swap="innerHTML">?</div>
+                            <div id="save-status" class="status-indicator" hx-get="/save?status" hx-trigger="load, every 0.2s" hx-swap="innerHTML">?</div>
                         </td>
                     </tr>
                 </tbody>
