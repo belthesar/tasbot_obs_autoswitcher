@@ -151,8 +151,8 @@ async def tasbot_switch_eyes(state: str):
                 PATH_TO_ANINJA,
                 TASBOT_CONFIG['images']['kill'],
             ])
-            global tasbot_eye_state
-            tasbot_eye_state = "kill"
+            
+            return "kill"
         except Exception as e:
             logging.error(f"[ANINJA] Error: {e}")
     elif state.lower() == "save" and tasbot_eye_state != "save":
@@ -163,7 +163,7 @@ async def tasbot_switch_eyes(state: str):
                 TASBOT_CONFIG['images']['save'],
             ])
             global tasbot_eye_state
-            tasbot_eye_state = "save"
+            return "save"
         except Exception as e:
             logging.error(f"[ANINJA] Error: {e}")
     elif state.lower() == "tie" and tasbot_eye_state != "tie":
@@ -174,7 +174,7 @@ async def tasbot_switch_eyes(state: str):
                 TASBOT_CONFIG['images']['tie'],
             ])
             global tasbot_eye_state
-            tasbot_eye_state = "tie"
+            return "tie"
         except Exception as e:
             logging.error(f"[ANINJA] Error: {e}")
     else:
@@ -250,15 +250,18 @@ async def tasbot_obs_autoswitcher_callback_v2(timer_name, context, timer):
         if api_bid_data["Kill the Animals"] > api_bid_data["Save the Animals"]:
             logger.debug("[BID DATA] Kill > Save")
             await switch_active_media("Kill")
-            await tasbot_switch_eyes("kill")
+            global tasbot_eye_state
+            tasbot_eye_state = await tasbot_switch_eyes("kill")
         elif api_bid_data["Kill the Animals"] < api_bid_data["Save the Animals"]:
             logger.debug("[BID DATA] Save > Kill")
             await switch_active_media("Save")
-            await tasbot_switch_eyes("save")
+            global tasbot_eye_state
+            tasbot_eye_state = await tasbot_switch_eyes("save")
         else:
             logger.debug("[BID DATA] Kill == Save")
             await switch_active_media("Tie")
-            await tasbot_switch_eyes("tie")
+            global tasbot_eye_state
+            tasbot_eye_state = await tasbot_switch_eyes("tie")
     return
 
 
