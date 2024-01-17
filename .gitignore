@@ -2,3 +2,4 @@
 /__pycache__
 /obs_scene_collections
 /obs_sources
+*.DS_Store
