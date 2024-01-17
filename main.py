@@ -38,6 +38,8 @@ run_started_at: datetime.datetime = None
 run_ttl_expired: bool = False
 api_bid_data: dict = {"Save": 0.0, "Kill": 0.0}
 last_api_bid_data: dict = {"Save": 0.0, "Kill": 0.0}
+tasbot_eye_state: str = ""
+
 
 ### OBS Websocket
 ws = simpleobsws.WebSocketClient(
@@ -131,9 +133,10 @@ async def switch_active_media(to_the_top: str, logger=logging.getLogger()):
 async def tasbot_switch_eyes(state: str):
     global CONFIG
     TASBOT_CONFIG = CONFIG["tasbot"]
+    global tasbot_eye_state
     PATH_TO_ANINJA = TASBOT_CONFIG["aninja"]
 
-    if state.lower() == "kill":
+    if state.lower() == "kill" and tasbot_eye_state != "kill":
         try:
             call_subprocess([
                 'python3',
@@ -141,6 +144,7 @@ async def tasbot_switch_eyes(state: str):
                 '-I',
                 TASBOT_CONFIG['images']['kill'],
             ])
+            tasbot_eye_state = "kill"
         except Exception as e:
             logging.error(f"[ANINJA] Error: {e}")
     elif state.lower() == "save":
@@ -151,6 +155,7 @@ async def tasbot_switch_eyes(state: str):
                 '-I',
                 TASBOT_CONFIG['images']['save'],
             ])
+            tasbot_eye_state = "save"
         except Exception as e:
             logging.error(f"[ANINJA] Error: {e}")
     elif state.lower() == "tie":
@@ -161,6 +166,7 @@ async def tasbot_switch_eyes(state: str):
                 '-I',
                 TASBOT_CONFIG['images']['tie'],
             ])
+            tasbot_eye_state = "tie"
         except Exception as e:
             logging.error(f"[ANINJA] Error: {e}")
     else:
