@@ -61,28 +61,37 @@ async def on_switchedscenes(eventData):
         await engage_auto_switcher()
 
 async def load_persistence_file(persistence_file_path: Path):
-    with open(persistence_file_path, "r") as f:
-        data = json.load(f)
-        run_started = data["run_started"]
-        run_started_at = datetime.datetime.strptime(
-            data["run_started_at"], "%Y-%m-%d %H:%M:%S"
-        )
-        return run_started, run_started_at
+    try: 
+        with open(persistence_file_path, "r") as f:
+            data = json.load(f)
+            run_started = data["run_started"]
+            run_started_at = datetime.datetime.strptime(
+                data["run_started_at"], "%Y-%m-%d %H:%M:%S"
+            )
+            return run_started, run_started_at
+    except FileNotFoundError:
+        return False, None
+    except Exception as e:
+        logging.error(f"Error loading persistence file: {e}")
+        return False, None
     
 async def write_persistence_file(persistence_file_path: Path):
-    with open(persistence_file_path, "rw+") as f:
-        global run_started
-        global run_started_at
-        data = {
-            "run_started": run_started,
-            "run_started_at": run_started_at.strftime("%Y-%m-%d %H:%M:%S"),
-        }
-        if json.load(f.read()) != data:
-            json.dump(data, f)
-            return True
-        else:
-            return False
-
+    try: 
+        with open(persistence_file_path, "rw+") as f:
+            global run_started
+            global run_started_at
+            data = {
+                "run_started": run_started,
+                "run_started_at": run_started_at.strftime("%Y-%m-%d %H:%M:%S"),
+            }
+            if json.load(f.read()) != data:
+                json.dump(data, f)
+                return True
+            else:
+                return False
+    except FileExistsError:
+        return False
+    
 async def engage_auto_switcher():
     global run_started
     global run_started_at
@@ -94,7 +103,6 @@ async def engage_auto_switcher():
     logging.info(
         f"[SWITCHER] Run started at: {run_started_at.strftime('%Y-%m-%d %H:%M:%S')}"
     )
-
 
 async def switch_active_media(to_the_top: str, logger=logging.getLogger()):
     get_scene_item_list_request = simpleobsws.Request(
@@ -143,6 +151,7 @@ async def tasbot_switch_eyes(state: str):
                 PATH_TO_ANINJA,
                 TASBOT_CONFIG['images']['kill'],
             ])
+            global tasbot_eye_state
             tasbot_eye_state = "kill"
         except Exception as e:
             logging.error(f"[ANINJA] Error: {e}")
@@ -153,6 +162,7 @@ async def tasbot_switch_eyes(state: str):
                 PATH_TO_ANINJA,
                 TASBOT_CONFIG['images']['save'],
             ])
+            global tasbot_eye_state
             tasbot_eye_state = "save"
         except Exception as e:
             logging.error(f"[ANINJA] Error: {e}")
@@ -163,6 +173,7 @@ async def tasbot_switch_eyes(state: str):
                 PATH_TO_ANINJA,
                 TASBOT_CONFIG['images']['tie'],
             ])
+            global tasbot_eye_state
             tasbot_eye_state = "tie"
         except Exception as e:
             logging.error(f"[ANINJA] Error: {e}")
