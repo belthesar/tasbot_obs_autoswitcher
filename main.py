@@ -104,6 +104,11 @@ async def engage_auto_switcher():
         f"[SWITCHER] Run started at: {run_started_at.strftime('%Y-%m-%d %H:%M:%S')}"
     )
 
+async def update_eye_state(eye_state: str):
+    global tasbot_eye_state
+    tasbot_eye_state = eye_state
+
+
 async def switch_active_media(to_the_top: str, logger=logging.getLogger()):
     get_scene_item_list_request = simpleobsws.Request(
         "GetSceneItemList", {"sceneName": "Metalive"}
@@ -138,45 +143,48 @@ async def switch_active_media(to_the_top: str, logger=logging.getLogger()):
     logging.info(f"[SWITCHER] Setting {to_the_top} as the top scene item")
     await ws.call(set_scene_item_index_request)
 
-async def tasbot_switch_eyes(state: str):
+async def tasbot_switch_eyes(state: str, logger=logging.getLogger()):
     global CONFIG
     TASBOT_CONFIG = CONFIG["tasbot"]
     global tasbot_eye_state
     PATH_TO_ANINJA = TASBOT_CONFIG["aninja"]
+    logger.debug(f"[ANINJA] Switching eyes to {state}")
+    logger.debug(f"[ANINJA] Current eye state: {tasbot_eye_state}")
 
-    if state.lower() == "kill" and tasbot_eye_state != "kill":
-        try:
-            call_subprocess([
-                'python3',
-                PATH_TO_ANINJA,
-                TASBOT_CONFIG['images']['kill'],
-            ])
-            
-            return "kill"
-        except Exception as e:
-            logging.error(f"[ANINJA] Error: {e}")
-    elif state.lower() == "save" and tasbot_eye_state != "save":
-        try:
-            call_subprocess([
-                'python3',
-                PATH_TO_ANINJA,
-                TASBOT_CONFIG['images']['save'],
-            ])
-            global tasbot_eye_state
-            return "save"
-        except Exception as e:
-            logging.error(f"[ANINJA] Error: {e}")
-    elif state.lower() == "tie" and tasbot_eye_state != "tie":
-        try:
-            call_subprocess([
-                'python3',
-                PATH_TO_ANINJA,
-                TASBOT_CONFIG['images']['tie'],
-            ])
-            global tasbot_eye_state
-            return "tie"
-        except Exception as e:
-            logging.error(f"[ANINJA] Error: {e}")
+    if state.lower() == "kill":
+        if tasbot_eye_state != "kill":
+            try:
+                call_subprocess([
+                    'python3',
+                    PATH_TO_ANINJA,
+                    TASBOT_CONFIG['images']['kill'],
+                ])
+                
+            except Exception as e:
+                logging.error(f"[ANINJA] Error: {e}")
+        return "kill"
+    elif state.lower() == "save":
+        if tasbot_eye_state != "save":
+            try:
+                call_subprocess([
+                    'python3',
+                    PATH_TO_ANINJA,
+                    TASBOT_CONFIG['images']['save'],
+                ])
+            except Exception as e:
+                logging.error(f"[ANINJA] Error: {e}")
+        return "save"
+    elif state.lower() == "tie":
+        if tasbot_eye_state != "tie":
+            try:
+                call_subprocess([
+                    'python3',
+                    PATH_TO_ANINJA,
+                    TASBOT_CONFIG['images']['tie'],
+                ])
+            except Exception as e:
+                logging.error(f"[ANINJA] Error: {e}")
+        return "tie"
     else:
         logging.warning(f"[ANINJA] Invalid state: {state}, unable to switch eyes")
 
@@ -250,18 +258,20 @@ async def tasbot_obs_autoswitcher_callback_v2(timer_name, context, timer):
         if api_bid_data["Kill the Animals"] > api_bid_data["Save the Animals"]:
             logger.debug("[BID DATA] Kill > Save")
             await switch_active_media("Kill")
-            global tasbot_eye_state
-            tasbot_eye_state = await tasbot_switch_eyes("kill")
+            eye_state = await tasbot_switch_eyes("kill")
+            await update_eye_state(eye_state)
         elif api_bid_data["Kill the Animals"] < api_bid_data["Save the Animals"]:
             logger.debug("[BID DATA] Save > Kill")
             await switch_active_media("Save")
             global tasbot_eye_state
-            tasbot_eye_state = await tasbot_switch_eyes("save")
+            eye_state = await tasbot_switch_eyes("save")
+            await update_eye_state(eye_state)
         else:
             logger.debug("[BID DATA] Kill == Save")
             await switch_active_media("Tie")
             global tasbot_eye_state
-            tasbot_eye_state = await tasbot_switch_eyes("tie")
+            eye_state = await tasbot_switch_eyes("tie")
+            await update_eye_state(eye_state)
     return
 
 
