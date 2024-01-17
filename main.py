@@ -141,7 +141,6 @@ async def tasbot_switch_eyes(state: str):
             call_subprocess([
                 'python3',
                 PATH_TO_ANINJA,
-                '-I',
                 TASBOT_CONFIG['images']['kill'],
             ])
             tasbot_eye_state = "kill"
@@ -152,7 +151,6 @@ async def tasbot_switch_eyes(state: str):
             call_subprocess([
                 'python3',
                 PATH_TO_ANINJA,
-                '-I',
                 TASBOT_CONFIG['images']['save'],
             ])
             tasbot_eye_state = "save"
@@ -163,7 +161,6 @@ async def tasbot_switch_eyes(state: str):
             call_subprocess([
                 'python3',
                 PATH_TO_ANINJA,
-                '-I',
                 TASBOT_CONFIG['images']['tie'],
             ])
             tasbot_eye_state = "tie"
