@@ -20,6 +20,14 @@ CONFIG = {
         ],
         "scene_switching_interval_seconds": 1,  # TODO: Remove this
     },
+    "tasbot": {
+        "aninja": "/path/to/aninja.py",
+        "images": {
+            "kill": "/path/to/kill.png",
+            "save": "/path/to/save.png",
+            "tie": "/path/to/tie.png",
+        },
+    },
     "events": {
         "agdq2024": {
             "bid_client": "gdq_donation_tracker",

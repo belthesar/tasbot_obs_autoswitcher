@@ -11,6 +11,7 @@ import datetime
 import json
 import logging
 import os
+from subprocess import call as call_subprocess
 import simpleobsws
 
 from enum import Enum
@@ -21,7 +22,7 @@ from config import CONFIG
 from timer import Timer
 
 logging.basicConfig(
-    level=logging.DEBUG,
+    level=logging.INFO,
     style="{",
     format="{asctime} {levelname} {message}",
     datefmt="%Y-%m-%d %H:%M:%S",
@@ -127,6 +128,44 @@ async def switch_active_media(to_the_top: str, logger=logging.getLogger()):
     logging.info(f"[SWITCHER] Setting {to_the_top} as the top scene item")
     await ws.call(set_scene_item_index_request)
 
+async def tasbot_switch_eyes(state: str):
+    global CONFIG
+    TASBOT_CONFIG = CONFIG["tasbot"]
+    PATH_TO_ANINJA = TASBOT_CONFIG["aninja"]
+
+    if state.lower() == "kill":
+        try:
+            call_subprocess([
+                'python3',
+                PATH_TO_ANINJA,
+                '-I',
+                TASBOT_CONFIG['images']['kill'],
+            ])
+        except Exception as e:
+            logging.error(f"[ANINJA] Error: {e}")
+    elif state.lower() == "save":
+        try:
+            call_subprocess([
+                'python3',
+                PATH_TO_ANINJA,
+                '-I',
+                TASBOT_CONFIG['images']['save'],
+            ])
+        except Exception as e:
+            logging.error(f"[ANINJA] Error: {e}")
+    elif state.lower() == "tie":
+        try:
+            call_subprocess([
+                'python3',
+                PATH_TO_ANINJA,
+                '-I',
+                TASBOT_CONFIG['images']['tie'],
+            ])
+        except Exception as e:
+            logging.error(f"[ANINJA] Error: {e}")
+    else:
+        logging.warning(f"[ANINJA] Invalid state: {state}, unable to switch eyes")
+
 
 async def tasbot_obs_autoswitcher_callback_v2(timer_name, context, timer):
     global api_bid_data
@@ -197,12 +236,15 @@ async def tasbot_obs_autoswitcher_callback_v2(timer_name, context, timer):
         if api_bid_data["Kill the Animals"] > api_bid_data["Save the Animals"]:
             logger.debug("[BID DATA] Kill > Save")
             await switch_active_media("Kill")
+            await tasbot_switch_eyes("kill")
         elif api_bid_data["Kill the Animals"] < api_bid_data["Save the Animals"]:
             logger.debug("[BID DATA] Save > Kill")
             await switch_active_media("Save")
+            await tasbot_switch_eyes("save")
         else:
             logger.debug("[BID DATA] Kill == Save")
             await switch_active_media("Tie")
+            await tasbot_switch_eyes("tie")
     return
 
 
