@@ -146,7 +146,7 @@ async def tasbot_switch_eyes(state: str):
             tasbot_eye_state = "kill"
         except Exception as e:
             logging.error(f"[ANINJA] Error: {e}")
-    elif state.lower() == "save":
+    elif state.lower() == "save" and tasbot_eye_state != "save":
         try:
             call_subprocess([
                 'python3',
@@ -156,7 +156,7 @@ async def tasbot_switch_eyes(state: str):
             tasbot_eye_state = "save"
         except Exception as e:
             logging.error(f"[ANINJA] Error: {e}")
-    elif state.lower() == "tie":
+    elif state.lower() == "tie" and tasbot_eye_state != "tie":
         try:
             call_subprocess([
                 'python3',
