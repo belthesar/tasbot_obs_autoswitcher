@@ -21,7 +21,7 @@ from config import CONFIG
 from timer import Timer
 
 logging.basicConfig(
-    level=logging.INFO,
+    level=logging.DEBUG,
     style="{",
     format="{asctime} {levelname} {message}",
     datefmt="%Y-%m-%d %H:%M:%S",
@@ -194,10 +194,10 @@ async def tasbot_obs_autoswitcher_callback_v2(timer_name, context, timer):
                         pass
         for key, value in api_bid_data.items():
             logger.debug(f"[BID DATA] {key}: {value}")
-        if api_bid_data["Kill"] > api_bid_data["Save"]:
+        if api_bid_data["Kill the Animals"] > api_bid_data["Save the Animals"]:
             logger.debug("[BID DATA] Kill > Save")
             await switch_active_media("Kill")
-        elif api_bid_data["Kill"] < api_bid_data["Save"]:
+        elif api_bid_data["Kill the Animals"] < api_bid_data["Save the Animals"]:
             logger.debug("[BID DATA] Save > Kill")
             await switch_active_media("Save")
         else:

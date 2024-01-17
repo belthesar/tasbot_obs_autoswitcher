@@ -5,7 +5,7 @@ from environs import Env
 CONFIG = {
     "main": {
         "event": "agdq2024",
-        "env": "mock",
+        "env": "prod",
         "ttl_persist_path": "./ttl_persist.json",
     },
     "obs": {
@@ -28,12 +28,12 @@ CONFIG = {
                 "api_base_url": "https://gamesdonequick.com/tracker/api/v2/bids/?id=",
                 "bids_to_track": [
                     {
-                        "bid_id": 5142,
+                        "bid_id": 16115,
                         "friendly_name": "Kill the Animals",
                         "source": "Kill",
                     },
                     {
-                        "bid_id": 5141,
+                        "bid_id": 16116,
                         "friendly_name": "Save the Animals",
                         "source": "Save",
                     },
