@@ -55,13 +55,15 @@ class PersistenceAction(Enum):
     WRITE = 2
     DELETE = 3
 
+
 async def on_switchedscenes(eventData):
     scene_name = eventData["sceneName"]
     if scene_name == "Metalive":  # TODO: Make this configurable
         await engage_auto_switcher()
 
+
 async def load_persistence_file(persistence_file_path: Path):
-    try: 
+    try:
         with open(persistence_file_path, "r") as f:
             data = json.load(f)
             run_started = data["run_started"]
@@ -74,9 +76,10 @@ async def load_persistence_file(persistence_file_path: Path):
     except Exception as e:
         logging.error(f"Error loading persistence file: {e}")
         return False, None
-    
+
+
 async def write_persistence_file(persistence_file_path: Path):
-    try: 
+    try:
         with open(persistence_file_path, "rw+") as f:
             global run_started
             global run_started_at
@@ -91,7 +94,8 @@ async def write_persistence_file(persistence_file_path: Path):
                 return False
     except FileExistsError:
         return False
-    
+
+
 async def engage_auto_switcher():
     global run_started
     global run_started_at
@@ -104,6 +108,7 @@ async def engage_auto_switcher():
         f"[SWITCHER] Run started at: {run_started_at.strftime('%Y-%m-%d %H:%M:%S')}"
     )
 
+
 async def update_eye_state(eye_state: str):
     global tasbot_eye_state
     tasbot_eye_state = eye_state
@@ -113,8 +118,8 @@ async def switch_active_media(to_the_top: str, logger=logging.getLogger()):
     get_scene_item_list_request = simpleobsws.Request(
         "GetSceneItemList", {"sceneName": "Metalive"}
     )
-    response = await ws.call(get_scene_item_list_request)
-    scene_items_list: list[dict] = response.responseData["sceneItems"]
+    scene_items_list_response = await ws.call(get_scene_item_list_request)
+    scene_items_list: list[dict] = scene_items_list_response.responseData["sceneItems"]
     # search each scene item for the one we want to move (sceneItemName == to_the_top)
     id_scene_item_to_move: int = None
     top_scene_item_index: int = max(
@@ -140,8 +145,31 @@ async def switch_active_media(to_the_top: str, logger=logging.getLogger()):
             "sceneItemIndex": top_scene_item_index,
         },
     )
+
+    # TODO: Abstract this magic bullshit
+    input_list_to_the_top_map: dict[str, str] = {
+        "Kill": "Kill animals",
+        "Save": "Save animals",
+        "Tie": "Tie animals",
+    }
+    input_mute_requests: list[simpleobsws.Request] = []
+    for (
+        key,
+        val,
+    ) in input_list_to_the_top_map.items():
+        input_muted = True if key != to_the_top else False
+        input_mute_requests.append(
+            simpleobsws.Request(
+                "SetInputMute", {"inputName": val, "inputMuted": input_muted}
+            )
+        )
+
     logging.info(f"[SWITCHER] Setting {to_the_top} as the top scene item")
     await ws.call(set_scene_item_index_request)
+    logging.info(f"[SWITCHER] Muting all inputs except {to_the_top}")
+    for request in input_mute_requests:
+        await ws.call(request)
+
 
 async def tasbot_switch_eyes(state: str, logger=logging.getLogger()):
     global CONFIG
@@ -154,34 +182,40 @@ async def tasbot_switch_eyes(state: str, logger=logging.getLogger()):
     if state.lower() == "kill":
         if tasbot_eye_state != "kill":
             try:
-                call_subprocess([
-                    'python3',
-                    PATH_TO_ANINJA,
-                    TASBOT_CONFIG['images']['kill'],
-                ])
-                
+                call_subprocess(
+                    [
+                        "python3",
+                        PATH_TO_ANINJA,
+                        TASBOT_CONFIG["images"]["kill"],
+                    ]
+                )
+
             except Exception as e:
                 logging.error(f"[ANINJA] Error: {e}")
         return "kill"
     elif state.lower() == "save":
         if tasbot_eye_state != "save":
             try:
-                call_subprocess([
-                    'python3',
-                    PATH_TO_ANINJA,
-                    TASBOT_CONFIG['images']['save'],
-                ])
+                call_subprocess(
+                    [
+                        "python3",
+                        PATH_TO_ANINJA,
+                        TASBOT_CONFIG["images"]["save"],
+                    ]
+                )
             except Exception as e:
                 logging.error(f"[ANINJA] Error: {e}")
         return "save"
     elif state.lower() == "tie":
         if tasbot_eye_state != "tie":
             try:
-                call_subprocess([
-                    'python3',
-                    PATH_TO_ANINJA,
-                    TASBOT_CONFIG['images']['tie'],
-                ])
+                call_subprocess(
+                    [
+                        "python3",
+                        PATH_TO_ANINJA,
+                        TASBOT_CONFIG["images"]["tie"],
+                    ]
+                )
             except Exception as e:
                 logging.error(f"[ANINJA] Error: {e}")
         return "tie"
