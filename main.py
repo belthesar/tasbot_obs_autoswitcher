@@ -286,6 +286,14 @@ async def tasbot_obs_autoswitcher_callback_v2(timer_name, context, timer):
                         logger.error(
                             f"[HTTP] We encountered an error while trying to connect to the API: {e}"
                         )
+                        
+                    except aiohttp.ClientResponseError as e:
+                        logger.error(
+                            f"[HTTP] We encountered an error while trying to connect to the API: {e}"
+                        )
+                        pass
+                    except Exception as e:
+                        logger.error(f"[HTTP] We encountered an error: {e}")
                         pass
         for key, value in api_bid_data.items():
             logger.debug(f"[BID DATA] {key}: {value}")
